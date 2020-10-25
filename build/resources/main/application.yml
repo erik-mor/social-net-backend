@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+db:
+  host: localhost
+  port: 5432
+  name: mojemama
+  username: postgres
+  password: password
+
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: false
+    generate-ddl: true
+    hibernate:
+      ddl-auto: none
+  datasource:
+    platform: postgresql
+    driver-class-name: org.postgresql.Driver
+    url: "jdbc:postgresql://${db.host}:${db.port}/${db.name}"
+    name: ${db.name}
+    username: ${db.username}
+    password: ${db.password}
+
+
