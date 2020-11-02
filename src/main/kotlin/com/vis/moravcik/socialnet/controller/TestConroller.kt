@@ -27,10 +27,10 @@ class TestConroller(
     @GetMapping("/{id}")
     fun getUser(@PathVariable id: Long): ResponseEntity<User> {
         val user = userRepository.findById(id)
-        if (user.isPresent) {
-            return ResponseEntity(user.get(), HttpStatus.FOUND)
+        return if (user.isPresent) {
+            ResponseEntity(user.get(), HttpStatus.FOUND)
         } else {
-            return ResponseEntity(HttpStatus.NOT_FOUND)
+            ResponseEntity(HttpStatus.NOT_FOUND)
         }
 
     }
