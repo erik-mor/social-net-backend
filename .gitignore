@@ -16,6 +16,5 @@ out/
 fe/.vscode/
 fe/node_modules
 fe/package-lock.json
-fe/package.json
 
 
