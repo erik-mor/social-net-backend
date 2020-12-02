@@ -1,35 +1,27 @@
 package com.vis.moravcik.socialnet.model
 
-import com.fasterxml.jackson.annotation.JsonAlias
-import com.fasterxml.jackson.annotation.JsonValue
-import com.fasterxml.jackson.databind.annotation.JsonSerialize
-import javax.persistence.*
+import com.fasterxml.jackson.annotation.JsonProperty
 
-@Entity
-@Table(name = "users")
 class User (
-        @Column(name = "first_name")
+        val id: Int,
+        var username: String,
+        var email: String,
+        var password: String,
         var firstName: String,
-
-        @Column(name = "last_name")
         var lastName: String,
+        var isManager: Boolean,
+        var longitude: Double?,
+        var latitude: Double?,
+        var isArchived: Boolean
+)
 
-        @Column(name = "type")
-        @Enumerated(EnumType.STRING)
-        var type: UserType
-
-) {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
-    val id: Long = 0
-
-}
-
-enum class UserType {
-    @JsonAlias("player")
-    PLAYER,
-    @JsonAlias("manager")
-    MANAGER;
-}
+data class CreateUserDTO(
+        val username: String,
+        val email: String,
+        val password: String,
+        val first_name: String,
+        val last_name: String,
+        val is_manager: Boolean,
+        val long: Double?,
+        val lat: Double?
+)

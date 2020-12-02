@@ -12,9 +12,9 @@ spring:
   jpa:
     database: POSTGRESQL
     show-sql: false
-    generate-ddl: true
-    hibernate:
-      ddl-auto: none
+    generate-ddl: false
+#    hibernate:
+#      ddl-auto: none
   datasource:
     platform: postgresql
     driver-class-name: org.postgresql.Driver
