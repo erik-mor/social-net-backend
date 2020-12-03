@@ -12,7 +12,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import java.sql.Statement
 
-// repository for channel_users and channels table
 @Repository
 class ChannelRepository(
         val template: JdbcOperations,
@@ -42,8 +41,16 @@ class ChannelRepository(
     }
 
     // get all channels by one user
-    fun getChannelsByUserId(userId: Int): MutableList<ChannelUser> {
-        return template.query("select * from channel_users where user_id=$userId", CHANNEL_USER_MAPPER)
+    fun getChannelsByUserId(userId: Int): MutableList<Int> {
+        return template.query("select channel_id from channel_users where user_id=$userId")
+        { rs, _ ->
+            rs.getInt("channel_id")
+        }
+    }
+
+    fun getChannelUsersByChannelIdAndUserId(userId: Int, ids: List<Int>): MutableList<ChannelUser> {
+        val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
+        return namedTemplate.query("select * from channel_users where user_id != $userId and channel_id in (:ids)", parameters, CHANNEL_USER_MAPPER)
     }
 
     fun getChannelById(id: Int): Channel? {
@@ -55,20 +62,6 @@ class ChannelRepository(
         template.update("insert into channel_users(channel_id, user_id) values ($channelId, $user1)")
         template.update("insert into channel_users(channel_id, user_id) values ($channelId, $user2)")
     }
-
-    // delete all rows for list of users
-//    fun deleteByUserIds(ids: List<Int>) {
-//        val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
-//        val channels = namedTemplate.query("select * from channel_users where user_id in (:ids)", parameters, CHANNEL_USER_MAPPER)
-//
-//        if (channels.isNotEmpty()) {
-//            val deleteChannelsParameters: SqlParameterSource = MapSqlParameterSource("ids", channels.map { it.channelId })
-//            val deleteChannelUsersParameters: SqlParameterSource = MapSqlParameterSource("ids", channels.map { it.id })
-//
-//            namedTemplate.update("delete from channel_users where id in (:ids)", deleteChannelUsersParameters)
-//            namedTemplate.update("delete from channels where id in (:ids)", deleteChannelsParameters)
-//        }
-//    }
 
     fun deleteByChannels(ids: List<Int>) {
         val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
@@ -99,7 +92,6 @@ class ChannelRepository(
             rs.getInt("id")
         }
     }
-
 }
 
 // mapping to channel_user object from database

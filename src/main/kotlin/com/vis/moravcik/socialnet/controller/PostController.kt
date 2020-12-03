@@ -38,6 +38,10 @@ class PostController(
     @GetMapping("/home/{id}")
     fun getAllPosts(@PathVariable id: Int): ResponseEntity<MutableList<Post>> {
         val followedUsers = followerRepository.findFollowingByFollowerId(id)
-        return ResponseEntity.ok(postRepository.findPostsByFollowedUsers(followedUsers))
+        if (followedUsers.isNotEmpty()) {
+            return ResponseEntity.ok(postRepository.findPostsByFollowedUsers(followedUsers))
+        } else {
+            return ResponseEntity.ok(mutableListOf())
+        }
     }
 }

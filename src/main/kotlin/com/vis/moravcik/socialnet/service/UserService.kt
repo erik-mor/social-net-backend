@@ -38,7 +38,7 @@ class UserService(
 
         createUserDTO.password = hashedPass
         userRepository.save(createUserDTO)
-        return ResponseEntity.ok(Response(true, "Registration successful"))
+        return ResponseEntity.ok(Response(true, "Registration successful. You can now login."))
     }
 
     fun loginUser(loginRequest: LoginRequest): ResponseEntity<LoginResponse> {

@@ -1,17 +1,20 @@
 package com.vis.moravcik.socialnet.service
 
 import com.vis.moravcik.socialnet.controller.ContactUserRequest
+import com.vis.moravcik.socialnet.controller.OpenChannelsResponse
 import com.vis.moravcik.socialnet.controller.SendMessageRequest
 import com.vis.moravcik.socialnet.model.ChannelUser
 import com.vis.moravcik.socialnet.model.Message
 import com.vis.moravcik.socialnet.repository.ChannelRepository
 import com.vis.moravcik.socialnet.repository.MessageRepository
+import com.vis.moravcik.socialnet.repository.UserRepository
 import org.springframework.stereotype.Service
 
 @Service
 class MessagingService(
         val channelRepository: ChannelRepository,
-        val messageRepository: MessageRepository
+        val messageRepository: MessageRepository,
+        val userRepository: UserRepository
 ) {
     fun contact(contactUserRequest: ContactUserRequest): Int {
         // condition so user cannot contact himself
@@ -32,8 +35,15 @@ class MessagingService(
         return channelId
     }
 
-    fun getChannelsForUser(userId: Int): MutableList<ChannelUser> {
-        return channelRepository.getChannelsByUserId(userId)
+    fun getChannelsForUser(userId: Int): List<OpenChannelsResponse> {
+        val channels = channelRepository.getChannelsByUserId(userId)
+        val channelUsers = channelRepository.getChannelUsersByChannelIdAndUserId(userId, channels)
+
+        return channelUsers.map {
+            val user = userRepository.findById(it.userId)
+            OpenChannelsResponse(it.channelId, it.userId, user!!.firstName, user.lastName)
+        }
+
     }
 
     fun getMessagesForChannel(channelId: Int): MutableList<Message> {

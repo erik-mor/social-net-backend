@@ -23,7 +23,7 @@ class MessagingController(
 
     // get all open channels for user
     @GetMapping("channels/{id}")
-    fun getChannels(@PathVariable id: Int): ResponseEntity<List<ChannelUser>> {
+    fun getChannels(@PathVariable id: Int): ResponseEntity<List<OpenChannelsResponse>> {
         return ResponseEntity.ok(messagingService.getChannelsForUser(id))
     }
 
@@ -52,6 +52,9 @@ data class SendMessageRequest(
         val message: String
 )
 
-
-
-
+data class OpenChannelsResponse(
+        val channel_id: Int,
+        val user_id: Int,
+        val firstName: String,
+        val lastName: String
+)
