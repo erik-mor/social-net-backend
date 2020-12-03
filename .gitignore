@@ -1,10 +1,11 @@
 HELP.md
-.gradle
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**
 !**/src/test/**
 
+xml-archives/
 ### IntelliJ IDEA ###
 .idea
 *.iws

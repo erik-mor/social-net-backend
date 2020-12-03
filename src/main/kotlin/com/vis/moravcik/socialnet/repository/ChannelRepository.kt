@@ -1,10 +1,9 @@
 package com.vis.moravcik.socialnet.repository
 
+import com.vis.moravcik.socialnet.model.Channel
 import com.vis.moravcik.socialnet.model.ChannelUser
-import com.vis.moravcik.socialnet.model.User
 import org.springframework.dao.support.DataAccessUtils
 import org.springframework.jdbc.core.JdbcOperations
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations
@@ -23,8 +22,8 @@ class ChannelRepository(
         val holder = GeneratedKeyHolder()
         template.update({ connection ->
             connection.prepareStatement("insert into channels default values;", Statement.RETURN_GENERATED_KEYS)
-        }, holder)
-        return holder.key!!.toInt()
+        }, holder )
+        return holder.keyList[0]["id"].toString().toInt()
     }
 
     // get channel id for two users - if exists
@@ -44,7 +43,12 @@ class ChannelRepository(
 
     // get all channels by one user
     fun getChannelsByUserId(userId: Int): MutableList<ChannelUser> {
-        return template.query("select * from channel_users where user_id=$userId", CHANNEL_MAPPER)
+        return template.query("select * from channel_users where user_id=$userId", CHANNEL_USER_MAPPER)
+    }
+
+    fun getChannelById(id: Int): Channel? {
+        val result = template.query("select * from channels where id=${id}", CHANNEL_MAPPER)
+        return if (result.isEmpty()) null else result.first()
     }
 
     fun saveUsers(channelId: Int, user1: Int, user2: Int) {
@@ -53,23 +57,63 @@ class ChannelRepository(
     }
 
     // delete all rows for list of users
-    fun deleteByUserIds(ids: List<Int>) {
+//    fun deleteByUserIds(ids: List<Int>) {
+//        val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
+//        val channels = namedTemplate.query("select * from channel_users where user_id in (:ids)", parameters, CHANNEL_USER_MAPPER)
+//
+//        if (channels.isNotEmpty()) {
+//            val deleteChannelsParameters: SqlParameterSource = MapSqlParameterSource("ids", channels.map { it.channelId })
+//            val deleteChannelUsersParameters: SqlParameterSource = MapSqlParameterSource("ids", channels.map { it.id })
+//
+//            namedTemplate.update("delete from channel_users where id in (:ids)", deleteChannelUsersParameters)
+//            namedTemplate.update("delete from channels where id in (:ids)", deleteChannelsParameters)
+//        }
+//    }
+
+    fun deleteByChannels(ids: List<Int>) {
         val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
-        val channels = namedTemplate.query("select * from channel_users where user_id in (:id)", parameters, CHANNEL_MAPPER)
-
-        val deleteChannelsParameters: SqlParameterSource = MapSqlParameterSource("ids", channels.map { it.channelId })
-        val deleteChannelUsersParameters: SqlParameterSource = MapSqlParameterSource("ids", channels.map { it.id })
-
-        namedTemplate.update("delete from channel_users where id in (:ids)", deleteChannelUsersParameters)
-        namedTemplate.update("delete from channels where id in (:ids)", deleteChannelsParameters)
+        namedTemplate.update("delete from channel_users where channel_id in (:ids)", parameters)
+        namedTemplate.update("delete from channels where id in (:ids)", parameters)
     }
+
+    fun getChannelsByUsers(ids: List<Int>): MutableList<Int> {
+        val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
+        return namedTemplate.query("select channel_id from channel_users where user_id in (:ids)", parameters
+        ) { rs, _ ->
+            rs.getInt("channel_id")
+        }
+    }
+
+    fun getAllByChannelId(id: Int): MutableList<ChannelUser> {
+        return template.query("select * from channel_users where channel_id=$id", CHANNEL_USER_MAPPER)
+    }
+
+    fun setArchived(is_archived: Boolean, ids: List<Int>) {
+        val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
+        namedTemplate.update("update channels set is_archived=$is_archived where id in (:ids);", parameters)
+    }
+
+    fun findAllNotArchived(): MutableList<Int> {
+        return template.query("select id from channels where is_archived=false"
+        ) { rs, _ ->
+            rs.getInt("id")
+        }
+    }
+
 }
 
 // mapping to channel_user object from database
-private val CHANNEL_MAPPER: RowMapper<ChannelUser> = RowMapper { rs, _ ->
+private val CHANNEL_USER_MAPPER: RowMapper<ChannelUser> = RowMapper { rs, _ ->
     ChannelUser(
             id = rs.getInt("id"),
             channelId = rs.getInt("channel_id"),
             userId = rs.getInt("user_id")
+    )
+}
+
+private val CHANNEL_MAPPER: RowMapper<Channel> = RowMapper { rs, _ ->
+    Channel(
+            id = rs.getInt("id"),
+            isArchived = rs.getBoolean("is_archived")
     )
 }

@@ -37,7 +37,7 @@ class UserRepository(
     }
 
     fun findById(id: Int): User? {
-        val result = template.query("select * from users where id=$id", USER_MAPPER)
+        val result = template.query("select * from users where id=${id}", USER_MAPPER)
         return if (result.isEmpty()) null else result.first()
     }
 
@@ -47,10 +47,10 @@ class UserRepository(
     }
 
     // get list of users by ids
-    fun getUsersByIds(ids: List<Int>, archive: Boolean = false): MutableList<User> {
+    fun getUsersByIds(ids: List<Int>): MutableList<User> {
         val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
         // if flag archive is set find only users that are not archived yet
-        return namedTemplate.query("select * from users where id in (:ids)" + if (archive) "and is_archived=false" else "", parameters, USER_MAPPER)
+        return namedTemplate.query("select * from users where id in (:ids)", parameters, USER_MAPPER)
      }
 
     fun discover(ids: List<Int>): List<User> {

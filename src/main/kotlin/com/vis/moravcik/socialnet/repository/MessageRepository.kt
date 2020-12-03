@@ -24,10 +24,16 @@ class MessageRepository(
     }
 
     // delete all messages for list of users
-    fun deleteByUserIds(ids: List<Int>): Int {
+//    fun deleteByUserIds(ids: List<Int>): Int {
+//        val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
+//        return namedTemplate.update("delete from messages where sender_id in (:ids)", parameters)
+//    }
+
+    fun deleteByChannels(ids: List<Int>) {
         val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
-        return namedTemplate.update("delete from messages where sender_id in (:ids)", parameters)
+        namedTemplate.update("delete from messages where channel_id in (:ids)", parameters)
     }
+
 
 }
 

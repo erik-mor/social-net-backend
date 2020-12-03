@@ -103,11 +103,14 @@ class UserService(
 
     // complete delete of user
     fun batchDelete(ids: List<Int>) {
-        userRepository.batchDelete(ids)
-        postRepository.deleteByUsers(ids)
+        val channels = channelRepository.getChannelsByUsers(ids)
+        if (channels.isNotEmpty()) {
+            messageRepository.deleteByChannels(channels)
+            channelRepository.deleteByChannels(channels)
+        }
         followerRepository.deleteByUserIds(ids)
-        messageRepository.deleteByUserIds(ids)
-        channelRepository.deleteByUserIds(ids)
+        postRepository.deleteByUsers(ids)
+        userRepository.batchDelete(ids)
     }
 }
 

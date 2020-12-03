@@ -11,19 +11,21 @@ import java.io.File
 @Component
 class XmlWriter{
 
-    val USERS_FILE_NAME = "xml-archive/user.xml"
+    val USERS_FILE_NAME = "xml-archives/user.xml"
+    val CHANNELS_FILE_NAME = "xml-archives/channels.xml"
+
     val xmlMapper = XmlMapper().apply {
         // just for indentation
         enable(SerializationFeature.INDENT_OUTPUT)
     }
 
     fun saveUsers(xmlUsers: MutableList<XMLUser>) {
-        val xmlArchive = File("user.xml")
+        val xmlArchive = File(USERS_FILE_NAME)
         val savedXMLUsers: XMLUsers?
 
         // if file exists get already archived users
         if (xmlArchive.exists()) {
-            savedXMLUsers = read()
+            savedXMLUsers = readUsers()
             // add new users for archiving
             savedXMLUsers?.users?.addAll(xmlUsers)
         } else {
@@ -32,9 +34,30 @@ class XmlWriter{
         xmlMapper.writeValue(File(USERS_FILE_NAME), savedXMLUsers)
     }
 
-    fun read(): XMLUsers? {
+    fun readUsers(): XMLUsers? {
         return xmlMapper.readValue(File(USERS_FILE_NAME), XMLUsers::class.java)
     }
+
+    fun saveChannels(channels: MutableList<XMLChannel>) {
+        val xmlArchive = File(CHANNELS_FILE_NAME)
+        val savedXMLChannels: XMLChannels?
+
+        // if file exists get already archived users
+        if (xmlArchive.exists()) {
+            savedXMLChannels = readChannels()
+
+            // add new users for archiving
+            savedXMLChannels?.channels?.addAll(channels)
+        } else {
+            savedXMLChannels = XMLChannels(channels)
+        }
+       xmlMapper.writeValue(File(CHANNELS_FILE_NAME), savedXMLChannels)
+    }
+
+    fun readChannels(): XMLChannels? {
+        return xmlMapper.readValue(File(CHANNELS_FILE_NAME), XMLChannels::class.java)
+    }
+
 }
 
 // XML objects
@@ -54,31 +77,28 @@ data class XMLUser (
         var is_manager: Boolean = false,
         var longitude: Double? = null,
         var latitude: Double? = null,
-        var posts: List<XMLPost>
-) {
-    constructor(user: User, posts: List<XMLPost>): this(
-            user.id,
-            user.username,
-            user.email,
-            user.password,
-            user.firstName,
-            user.lastName ,
-            user.isManager,
-            user.longitude,
-            user.latitude,
-            posts
-    )
-}
-
+        var posts: List<XMLPost> = ArrayList()
+)
 data class XMLPost (
-        val id: Int,
-        var user_id: Int,
-        var content: String
-) {
-    constructor(post: Post): this(
-            post.id,
-            post.user_id,
-            post.content
-    )
-}
+        val id: Int = 0,
+        var user_id: Int = 0,
+        var content: String = ""
+)
+
+data class XMLChannels(
+        val channels: MutableList<XMLChannel> = ArrayList()
+)
+
+data class XMLChannel (
+        val id: Int = 0,
+        val user1: Int = 0,
+        val user2: Int = 0,
+        val messages: List<XMLMessage> = ArrayList()
+)
+
+data class XMLMessage (
+        val id: Int = 0,
+        val sender_id: Int= 0,
+        val message: String = ""
+)
 

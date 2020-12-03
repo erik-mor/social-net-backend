@@ -2,6 +2,8 @@ package com.vis.moravcik.socialnet.controller
 
 import com.vis.moravcik.socialnet.model.ChannelUser
 import com.vis.moravcik.socialnet.model.Message
+import com.vis.moravcik.socialnet.model.User
+import com.vis.moravcik.socialnet.repository.ChannelRepository
 import com.vis.moravcik.socialnet.service.MessagingService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller

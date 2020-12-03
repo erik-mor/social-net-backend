@@ -27,7 +27,8 @@ CREATE TABLE posts (
 );
 
 CREATE TABLE channels (
-    id SERIAL PRIMARY KEY
+    id SERIAL PRIMARY KEY,
+    is_archived boolean default false
 );
 
 CREATE TABLE messages (
@@ -81,7 +82,7 @@ values ('rob', 'robLewa@gmail.com', '$2a$12$A3x5eJRW5Hz3CuJqpew.wuChSEyHq5w5KBIl
 
 insert into
     users(username, email, password, first_name, last_name, is_manager, longitude, latitude)
-values ('jakub', 'jakubBlzscyk@gmail.com', '$2a$12$HsqLFhOGnc4DxHHCOo55M.NWqKEgbBM0lblIJhCRaEKE1tPPLaZlm', 'Jakub', 'Blazscyk', false, 21.0122, 52.2297)
+values ('jakub', 'jakubBlzscyk@gmail.com', '$2a$12$HsqLFhOGnc4DxHHCOo55M.NWqKEgbBM0lblIJhCRaEKE1tPPLaZlm', 'Jakub', 'Blazscyk', false, 21.0122, 52.2297);
 
 
 insert into channels default values;
