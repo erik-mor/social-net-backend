@@ -1,5 +1,6 @@
 package com.vis.moravcik.socialnet
 
+import at.favre.lib.crypto.bcrypt.BCrypt
 import java.util.*
 
 val scanner = Scanner(System.`in`)

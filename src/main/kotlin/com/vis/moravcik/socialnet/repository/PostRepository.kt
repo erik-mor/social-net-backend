@@ -48,7 +48,7 @@ class PostRepository(
 
     fun findPostsByFollowedUsers(ids: List<Int>): MutableList<Post> {
         val parameters: SqlParameterSource = MapSqlParameterSource("ids", ids)
-        return namedTemplate.query("select * from posts where user_id in (:ids)"
+        return namedTemplate.query("select * from posts where user_id in (:ids);", parameters
         ) { rs, _ ->
             Post(
                     id = rs.getInt("id"),

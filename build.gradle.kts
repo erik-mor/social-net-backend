@@ -30,6 +30,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.postgresql:postgresql")
+	compileOnly("at.favre.lib:bcrypt:0.9.0")
 	compileOnly("org.projectlombok:lombok")
 	compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.3")
 	implementation("khttp:khttp:1.0.0")

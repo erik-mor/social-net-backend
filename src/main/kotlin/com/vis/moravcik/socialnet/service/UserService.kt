@@ -1,5 +1,6 @@
 package com.vis.moravcik.socialnet.service
 
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.vis.moravcik.socialnet.controller.*
 import com.vis.moravcik.socialnet.model.CreateFollowerFollowing
 import com.vis.moravcik.socialnet.model.CreateUserDTO
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service
 import kotlin.math.acos
 import kotlin.math.cos
 import kotlin.math.sin
+
 
 @Service
 class UserService(
@@ -32,7 +34,9 @@ class UserService(
         if (user != null) {
             return ResponseEntity.ok(Response(false, "username already in use"))
         }
+        val hashedPass = BCrypt.withDefaults().hashToString(12, createUserDTO.password.toCharArray())
 
+        createUserDTO.password = hashedPass
         userRepository.save(createUserDTO)
         return ResponseEntity.ok(Response(true, "Registration successful"))
     }
@@ -43,7 +47,9 @@ class UserService(
                 ?: return ResponseEntity.ok(LoginResponse(false, "User does not exist", null, null))
 
         // check if password is correct
-        return if (loginRequest.password == user.password) {
+        val result: BCrypt.Result = BCrypt.verifyer().verify(loginRequest.password.toCharArray(), user.password)
+
+        return if (result.verified) {
             ResponseEntity.ok(LoginResponse(true, "Login successful", user.id, user.isManager))
         } else {
             ResponseEntity.ok(LoginResponse(false, "Wrong password", user.id, user.isManager))

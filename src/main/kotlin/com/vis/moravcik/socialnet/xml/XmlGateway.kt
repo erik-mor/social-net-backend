@@ -11,7 +11,7 @@ import java.io.File
 @Component
 class XmlWriter{
 
-    val USERS_FILE_NAME = "user.xml"
+    val USERS_FILE_NAME = "xml-archive/user.xml"
     val xmlMapper = XmlMapper().apply {
         // just for indentation
         enable(SerializationFeature.INDENT_OUTPUT)
