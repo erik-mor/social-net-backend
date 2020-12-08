@@ -1,6 +1,6 @@
 package com.vis.moravcik.socialnet
 
-import at.favre.lib.crypto.bcrypt.BCrypt
+import org.json.JSONObject
 import java.util.*
 
 val scanner = Scanner(System.`in`)
@@ -17,7 +17,7 @@ fun main() {
         val password: String = scanner.nextLine()
 
         val response = khttp.post(
-                url = "http://localhost:8080/user/login",
+                url = "http://localhost:8080/admin/login",
                 json = mapOf("username" to username, "password" to password)
         )
         val success = response.jsonObject["success"]
@@ -64,14 +64,16 @@ fun printUsers(archiving: Boolean = false): Boolean {
 }
 
 fun printChannels(): Boolean {
-    val url = "http://localhost:8080/arch/channels/not-archived"
+    val url = "http://localhost:8080/admin/channels/not-archived"
     val response = khttp.get(url)
     val channels = response.jsonArray
 
     return if (channels.length() > 0) {
         for (i in 0 until channels.length()) {
             val channel = channels.getJSONObject(i)
-            println("${channel["id"]}  ${channel["user1"]}")
+            val user1: JSONObject = channel["user1"] as JSONObject
+            val user2: JSONObject = channel["user2"] as JSONObject
+            println("Channel id: ${channel["id"]} >>> User 1 -> id: ${user1["id"]} ${user1["firstName"]} ${user1["lastName"]} | User 2 -> id: ${user2["id"]} ${user2["firstName"]} ${user2["lastName"]}")
         }
         true
     } else {
@@ -84,7 +86,7 @@ fun archiveUsers() {
     val isNotEmpty = printUsers(archiving = true)
     if (isNotEmpty) {
         println("Enter space separated values(id) for users to archive")
-        process("http://localhost:8080/arch/users")
+        process("http://localhost:8080/admin/archive/users")
     }
 }
 
@@ -92,7 +94,7 @@ fun archiveChannels() {
     val isNotEmpty = printChannels()
     if (isNotEmpty) {
         println("Enter space separated values(id) for channels to archive")
-        process("http://localhost:8080/arch/channels")
+        process("http://localhost:8080/admin/archive/channels")
     }
 }
 
@@ -105,7 +107,7 @@ fun deleteUsers() {
 fun process(url: String) {
     val query = scanner.nextLine()
     if (query != "quit" && query != "q") {
-        val ids: List<Int> = query.split(" ").map { it.toInt() }
+        val ids: List<Int> = query.trimEnd().split(" ").map { it.toInt() }
         khttp.post(
                 url = url,
                 json = mapOf("ids" to ids)

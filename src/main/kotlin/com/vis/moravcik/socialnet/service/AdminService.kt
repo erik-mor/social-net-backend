@@ -1,21 +1,38 @@
 package com.vis.moravcik.socialnet.service
 
+import at.favre.lib.crypto.bcrypt.BCrypt
 import com.vis.moravcik.socialnet.controller.ChannelsResponse
-import com.vis.moravcik.socialnet.repository.ChannelRepository
-import com.vis.moravcik.socialnet.repository.MessageRepository
-import com.vis.moravcik.socialnet.repository.PostRepository
-import com.vis.moravcik.socialnet.repository.UserRepository
+import com.vis.moravcik.socialnet.controller.LoginRequest
+import com.vis.moravcik.socialnet.controller.Response
+import com.vis.moravcik.socialnet.repository.*
 import com.vis.moravcik.socialnet.xml.*
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 
 @Service
-class ArchivingService(
+class AdminService(
         val userRepository: UserRepository,
+        val adminRepository: AdminRepository,
         val postRepository: PostRepository,
         val xmlWriter: XmlWriter,
         val channelRepository: ChannelRepository,
+        val channelUserRepository: ChannelUserRepository,
         val messageRepository: MessageRepository
 ) {
+    fun loginAdmin(request: LoginRequest): ResponseEntity<Response> {
+        // check if username is present
+        val admin = adminRepository.findByUsername(username = request.username)
+                ?: return ResponseEntity.ok(Response(false, "User does not exist"))
+
+        // check if password is correct
+        val result: BCrypt.Result = BCrypt.verifyer().verify(request.password.toCharArray(), admin.password)
+
+        return if (result.verified) {
+            ResponseEntity.ok(Response(true, "Login successful"))
+        } else {
+            ResponseEntity.ok(Response(false, "Wrong password"))
+        }
+    }
 
     fun archiveUsers(ids: List<Int>){
         // get users that are requested to archiving and filter already archived
@@ -60,7 +77,7 @@ class ArchivingService(
 
         // get users and messages for every channel and mapping to xml objects
         val channels = filteredChannels.map {
-            val channelsUsers = channelRepository.getAllByChannelId(it)
+            val channelsUsers = channelUserRepository.getAllByChannelId(it)
             val messages = messageRepository.getMessagesByChannel(it).map {
                 message ->  XMLMessage(message.id, message.senderId, message.message)
             }
@@ -72,13 +89,12 @@ class ArchivingService(
 
     fun findAllNotArchived(): List<ChannelsResponse> {
         val channels = channelRepository.findAllNotArchived()
-        val response = channels.map {
-            val channelUsers = channelRepository.getAllByChannelId(it)
+        return channels.map {
+            val channelUsers = channelUserRepository.getAllByChannelId(it)
             val user1 = userRepository.findById(channelUsers[0].userId)
             val user2 = userRepository.findById(channelUsers[1].userId)
 
             ChannelsResponse(it, user1, user2)
         }
-        return response
     }
 }

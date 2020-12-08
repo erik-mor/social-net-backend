@@ -57,11 +57,9 @@ class XmlWriter{
     fun readChannels(): XMLChannels? {
         return xmlMapper.readValue(File(CHANNELS_FILE_NAME), XMLChannels::class.java)
     }
-
 }
 
 // XML objects
-
 data class XMLUsers(
         @set:JsonProperty("User")
         var users: MutableList<XMLUser> = ArrayList()
@@ -77,7 +75,7 @@ data class XMLUser (
         var is_manager: Boolean = false,
         var longitude: Double? = null,
         var latitude: Double? = null,
-        var posts: List<XMLPost> = ArrayList()
+        var posts: List<XMLPost>? = ArrayList()
 )
 data class XMLPost (
         val id: Int = 0,
@@ -101,4 +99,3 @@ data class XMLMessage (
         val sender_id: Int= 0,
         val message: String = ""
 )
-

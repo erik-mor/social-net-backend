@@ -19,7 +19,8 @@ class UserService(
         val followerRepository: FollowerRepository,
         val postRepository: PostRepository,
         val messageRepository: MessageRepository,
-        val channelRepository: ChannelRepository
+        val channelRepository: ChannelRepository,
+        val channelUserRepository: ChannelUserRepository
 ) {
 
     fun registerUser(createUserDTO: CreateUserDTO): ResponseEntity<Response> {
@@ -103,10 +104,11 @@ class UserService(
 
     // complete delete of user
     fun batchDelete(ids: List<Int>) {
-        val channels = channelRepository.getChannelsByUsers(ids)
+        val channels = channelUserRepository.getChannelsByUsers(ids)
         if (channels.isNotEmpty()) {
             messageRepository.deleteByChannels(channels)
-            channelRepository.deleteByChannels(channels)
+            channelUserRepository.deleteByChannelId(channels)
+            channelRepository.deleteByChannelId(channels)
         }
         followerRepository.deleteByUserIds(ids)
         postRepository.deleteByUsers(ids)

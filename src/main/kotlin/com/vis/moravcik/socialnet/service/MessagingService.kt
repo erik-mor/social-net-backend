@@ -6,6 +6,7 @@ import com.vis.moravcik.socialnet.controller.SendMessageRequest
 import com.vis.moravcik.socialnet.model.ChannelUser
 import com.vis.moravcik.socialnet.model.Message
 import com.vis.moravcik.socialnet.repository.ChannelRepository
+import com.vis.moravcik.socialnet.repository.ChannelUserRepository
 import com.vis.moravcik.socialnet.repository.MessageRepository
 import com.vis.moravcik.socialnet.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service
 @Service
 class MessagingService(
         val channelRepository: ChannelRepository,
+        val channelUserRepository: ChannelUserRepository,
         val messageRepository: MessageRepository,
         val userRepository: UserRepository
 ) {
@@ -22,7 +24,7 @@ class MessagingService(
             return 0
 
         // if channel already exists return it or create new for requesting users
-        return channelRepository.getChannelByUsers(contactUserRequest.user_id, contactUserRequest.contacted_user_id)
+        return channelUserRepository.getChannelIdForUsers(contactUserRequest.user_id, contactUserRequest.contacted_user_id)
             ?: createChannel(contactUserRequest)
     }
 
@@ -31,19 +33,21 @@ class MessagingService(
         val channelId = channelRepository.saveChannel()
 
         // create entries in channel_users for requesting users
-        channelRepository.saveUsers(channelId, contactUserRequest.user_id, contactUserRequest.contacted_user_id)
+        channelUserRepository.saveUsers(channelId, contactUserRequest.user_id, contactUserRequest.contacted_user_id)
         return channelId
     }
 
     fun getChannelsForUser(userId: Int): List<OpenChannelsResponse> {
-        val channels = channelRepository.getChannelsByUserId(userId)
-        val channelUsers = channelRepository.getChannelUsersByChannelIdAndUserId(userId, channels)
+        val channels = channelUserRepository.getChannelIdByUser(userId)
+        if (channels.isEmpty()) {
+            return listOf()
+        }
+        val channelUsers = channelUserRepository.getChannelUsersByChannelsAndUserId(userId, channels)
 
         return channelUsers.map {
             val user = userRepository.findById(it.userId)
             OpenChannelsResponse(it.channelId, it.userId, user!!.firstName, user.lastName)
         }
-
     }
 
     fun getMessagesForChannel(channelId: Int): MutableList<Message> {

@@ -1,7 +1,7 @@
 package com.vis.moravcik.socialnet.controller
 
 import com.vis.moravcik.socialnet.model.User
-import com.vis.moravcik.socialnet.service.ArchivingService
+import com.vis.moravcik.socialnet.service.AdminService
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
@@ -9,24 +9,30 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 
-@RequestMapping("/arch")
+@RequestMapping("/admin")
 @Controller
-class ArchivingController(
-        val archivingService: ArchivingService
+class AdminController(
+        val adminService: AdminService
 ) {
-    @PostMapping("/users")
-    fun archiveUsers(@RequestBody archiveRequest: ArchiveDeleteRequest) {
-        archivingService.archiveUsers(archiveRequest.ids)
+
+    @PostMapping("/login")
+    fun login(@RequestBody request: LoginRequest): ResponseEntity<Response> {
+        return adminService.loginAdmin(request)
     }
 
-    @PostMapping("/channels")
+    @PostMapping("/archive/users")
+    fun archiveUsers(@RequestBody archiveRequest: ArchiveDeleteRequest) {
+        adminService.archiveUsers(archiveRequest.ids)
+    }
+
+    @PostMapping("/archive/channels")
     fun archiveChannels(@RequestBody archiveRequest: ArchiveDeleteRequest) {
-        archivingService.archiveChannels(archiveRequest.ids)
+        adminService.archiveChannels(archiveRequest.ids)
     }
 
     @GetMapping("/channels/not-archived")
     fun getAllNotArchived(): ResponseEntity<List<ChannelsResponse>> {
-        return ResponseEntity.ok(archivingService.findAllNotArchived())
+        return ResponseEntity.ok(adminService.findAllNotArchived())
     }
 }
 

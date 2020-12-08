@@ -4,7 +4,7 @@ import com.vis.moravcik.socialnet.model.CreateUserDTO
 import com.vis.moravcik.socialnet.model.PlayerPosition
 import com.vis.moravcik.socialnet.model.User
 import com.vis.moravcik.socialnet.repository.UserRepository
-import com.vis.moravcik.socialnet.service.ArchivingService
+import com.vis.moravcik.socialnet.service.AdminService
 import com.vis.moravcik.socialnet.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 class UserController(
         val userService: UserService,
         val userRepository: UserRepository,
-        val archivingService: ArchivingService
+        val adminService: AdminService
 ) {
     @PostMapping("/register")
     fun register(@RequestBody user: CreateUserDTO): ResponseEntity<Response> {
@@ -56,7 +56,7 @@ class UserController(
 
     @PostMapping("/archive")
     fun archive(@RequestBody archiveRequest: ArchiveDeleteRequest) {
-        archivingService.archiveUsers(archiveRequest.ids)
+        adminService.archiveUsers(archiveRequest.ids)
     }
 
     @PostMapping("/batch-delete")
