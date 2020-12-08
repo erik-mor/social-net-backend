@@ -1,6 +1,7 @@
 package com.vis.moravcik.socialnet.repository
 
 import com.vis.moravcik.socialnet.model.CreateUserDTO
+import com.vis.moravcik.socialnet.model.PlayerPosition
 import com.vis.moravcik.socialnet.model.User
 import org.springframework.jdbc.core.JdbcOperations
 import org.springframework.jdbc.core.RowMapper
@@ -17,8 +18,15 @@ class UserRepository(
         val namedTemplate: NamedParameterJdbcOperations
 ) {
     fun save(user: CreateUserDTO): Int {
-        val insertString = "insert into users(username, email, password, first_name, last_name, is_manager, longitude, latitude) values (?, ?, ?, ?, ?, ?, ?, ?);"
-        return template.update(insertString, user.username, user.email, user.password, user.first_name, user.last_name, user.is_manager, user.long, user.lat)
+        val insertString: String
+         if (user.position != null) {
+            insertString = "insert into users(username, email, password, first_name, last_name, club, position,is_manager, longitude, latitude) values (?, ?, ?, ?, ?, ?, CAST(? as player_position), ?, ?, ?);"
+             return template.update(insertString, user.username, user.email, user.password, user.first_name, user.last_name, user.club, user.position.toString(), user.is_manager, user.long, user.lat)
+         } else {
+            insertString = "insert into users(username, email, password, first_name, last_name, club,is_manager, longitude, latitude) values (?, ?, ?, ?, ?, ?, ?, ?, ?);"
+             return template.update(insertString, user.username, user.email, user.password, user.first_name, user.last_name, user.club, user.is_manager, user.long, user.lat)
+
+         }
     }
 
     fun delete(id: Int): Int {
@@ -90,6 +98,8 @@ private val USER_MAPPER: RowMapper<User> = RowMapper { rs, _ ->
             password = rs.getString("password"),
             firstName = rs.getString("first_name"),
             lastName = rs.getString("last_name"),
+            club = rs.getString("club"),
+            position = if (rs.getString("position") == null) null else PlayerPosition.valueOf(rs.getString("position")),
             isManager = rs.getBoolean("is_manager"),
             longitude = rs.getDouble("longitude"),
             latitude = rs.getDouble("latitude"),

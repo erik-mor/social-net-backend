@@ -96,7 +96,6 @@ fun archiveChannels() {
     }
 }
 
-
 fun deleteUsers() {
     printUsers()
     println("Enter space separated values(id) for users to delete")

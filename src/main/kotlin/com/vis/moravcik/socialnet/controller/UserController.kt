@@ -1,6 +1,7 @@
 package com.vis.moravcik.socialnet.controller
 
 import com.vis.moravcik.socialnet.model.CreateUserDTO
+import com.vis.moravcik.socialnet.model.PlayerPosition
 import com.vis.moravcik.socialnet.model.User
 import com.vis.moravcik.socialnet.repository.UserRepository
 import com.vis.moravcik.socialnet.service.ArchivingService
@@ -73,6 +74,10 @@ class UserController(
         return ResponseEntity.ok(userRepository.findAllNotArchived())
     }
 
+    @GetMapping("/positions")
+    fun getPositions(): ResponseEntity<List<PlayerPosition>> {
+        return ResponseEntity.ok(PlayerPosition.values().toList())
+    }
 }
 // Request to follow user
 data class FollowUserRequest(
