@@ -1,10 +1,8 @@
 package com.vis.moravcik.socialnet.controller
 
-import com.vis.moravcik.socialnet.model.CreateUserDTO
-import com.vis.moravcik.socialnet.model.PlayerPosition
 import com.vis.moravcik.socialnet.model.User
+import com.vis.moravcik.socialnet.repository.Discover
 import com.vis.moravcik.socialnet.repository.UserRepository
-import com.vis.moravcik.socialnet.service.AdminService
 import com.vis.moravcik.socialnet.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -16,11 +14,10 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/user")
 class UserController(
         val userService: UserService,
-        val userRepository: UserRepository,
-        val adminService: AdminService
+        val userRepository: UserRepository
 ) {
     @PostMapping("/register")
-    fun register(@RequestBody user: CreateUserDTO): ResponseEntity<Response> {
+    fun register(@RequestBody user: User): ResponseEntity<Response> {
         return userService.registerUser(user)
     }
 
@@ -50,33 +47,8 @@ class UserController(
     }
 
     @GetMapping("/discover/{id}")
-    fun discover(@PathVariable id: Int): ResponseEntity<DiscoverResponse> {
-        return ResponseEntity.ok(userService.discover(id))
-    }
-
-    @PostMapping("/archive")
-    fun archive(@RequestBody archiveRequest: ArchiveDeleteRequest) {
-        adminService.archiveUsers(archiveRequest.ids)
-    }
-
-    @PostMapping("/batch-delete")
-    fun batchDelete(@RequestBody deleteRequest: ArchiveDeleteRequest) {
-        userService.batchDelete(deleteRequest.ids)
-    }
-
-    @GetMapping("/all")
-    fun getAll(): ResponseEntity<MutableList<User>> {
-        return ResponseEntity.ok(userRepository.findAll())
-    }
-
-    @GetMapping("/not-archived")
-    fun getAllNotArchived(): ResponseEntity<MutableList<User>> {
-        return ResponseEntity.ok(userRepository.findAllNotArchived())
-    }
-
-    @GetMapping("/positions")
-    fun getPositions(): ResponseEntity<List<PlayerPosition>> {
-        return ResponseEntity.ok(PlayerPosition.values().toList())
+    fun discover(@PathVariable id: Int): ResponseEntity<MutableList<Discover>> {
+        return ResponseEntity.ok(userRepository.discover(id))
     }
 }
 // Request to follow user
@@ -96,11 +68,6 @@ data class LoginRequest(
         val password: String
 )
 
-// request from console application - delete or archive users
-data class ArchiveDeleteRequest(
-        val ids: List<Int>
-)
-
 // multi purpose response object
 data class Response(
         val success: Boolean,
@@ -112,10 +79,4 @@ data class LoginResponse(
         var message: String,
         var id: Int?,
         var is_manager: Boolean?
-)
-
-// response with discovered users
-data class DiscoverResponse(
-        val success: Boolean,
-        val users: List<User>?
 )

@@ -1,8 +1,6 @@
 package com.vis.moravcik.socialnet.controller
 
-import com.vis.moravcik.socialnet.model.ChannelUser
 import com.vis.moravcik.socialnet.model.Message
-import com.vis.moravcik.socialnet.model.User
 import com.vis.moravcik.socialnet.repository.ChannelRepository
 import com.vis.moravcik.socialnet.service.MessagingService
 import org.springframework.http.ResponseEntity
@@ -13,12 +11,13 @@ import org.springframework.web.bind.annotation.*
 @Controller
 @RequestMapping("/messaging")
 class MessagingController(
-        val messagingService: MessagingService
+        val messagingService: MessagingService,
+        val channelRepository: ChannelRepository
 ) {
     // contact user
     @PostMapping("/contact")
     fun contact(@RequestBody contactUserRequest: ContactUserRequest): ResponseEntity<Int> {
-        return ResponseEntity.ok(messagingService.contact(contactUserRequest))
+        return ResponseEntity.ok(channelRepository.saveChannel(contactUserRequest.user_id, contactUserRequest.contacted_user_id)!!)
     }
 
     // get all open channels for user

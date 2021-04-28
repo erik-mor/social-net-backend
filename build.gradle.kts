@@ -30,6 +30,9 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.postgresql:postgresql")
+	implementation("com.microsoft.sqlserver:mssql-jdbc")
+	implementation("org.springframework.boot:spring-boot-starter-mail:2.3.10.RELEASE")
+
 	compileOnly("at.favre.lib:bcrypt:0.9.0")
 	compileOnly("org.projectlombok:lombok")
 	compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.11.3")

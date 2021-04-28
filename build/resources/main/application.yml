@@ -1,14 +1,25 @@
 server:
   port: 8080
 
-db:
-  host: localhost
-  port: 5432
-  name: mojemama
-  username: postgres
-  password: password
+#db:
+#  host: localhost
+#  port: 5432
+#  name: social-net
+#  username: postgres
+#  password: password
 
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: 14erto14@gmail.com
+    password: Pop3olds6ejrf
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   jpa:
     database: POSTGRESQL
     show-sql: false
@@ -16,11 +27,13 @@ spring:
 #    hibernate:
 #      ddl-auto: none
   datasource:
-    platform: postgresql
-    driver-class-name: org.postgresql.Driver
-    url: "jdbc:postgresql://${db.host}:${db.port}/${db.name}"
-    name: ${db.name}
-    username: ${db.username}
-    password: ${db.password}
+    platform: mssql
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#    url: "jdbc:postgresql://${db.host}:${db.port}/${db.name}"
+    url: "jdbc:sqlserver://dbsys.cs.vsb.cz\\STUDENT:52123;database=mor0170"
+#    name: ${db.name}
+    username: mor0170
+    password: c5N50Dt9bv
+
 
 

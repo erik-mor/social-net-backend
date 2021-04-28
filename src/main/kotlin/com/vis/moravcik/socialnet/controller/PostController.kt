@@ -1,25 +1,27 @@
 package com.vis.moravcik.socialnet.controller
 
-import com.vis.moravcik.socialnet.model.CreatePostDTO
-import com.vis.moravcik.socialnet.model.Post
-import com.vis.moravcik.socialnet.repository.FollowerRepository
+import com.vis.moravcik.socialnet.model.GetPost
+import com.vis.moravcik.socialnet.model.Like
+import com.vis.moravcik.socialnet.repository.LikeRepository
 import com.vis.moravcik.socialnet.repository.PostRepository
+import com.vis.moravcik.socialnet.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
-import java.sql.Timestamp
 
 @CrossOrigin(origins = ["http://localhost:3000"])
 @Controller
 @RequestMapping("/post")
 class PostController(
         val postRepository: PostRepository,
-        val followerRepository: FollowerRepository
+        val likeRepository: LikeRepository,
+        val userService: UserService
 ) {
 
     @PostMapping("/addPost")
-    fun addPost(@RequestBody post: CreatePostDTO): ResponseEntity<Int> {
+    fun addPost(@RequestBody post: CreatePost): ResponseEntity<Int> {
+        userService.sendMail(post.user_id)
         return ResponseEntity(postRepository.save(post), HttpStatus.CREATED)
     }
 
@@ -30,18 +32,24 @@ class PostController(
 
     // get all post by one user
     @GetMapping("/profile/{id}")
-    fun getPostsByUser(@PathVariable id: Int): ResponseEntity<MutableList<Post>> {
-        return ResponseEntity.ok(postRepository.findAllByUserId(id))
+    fun getPostsByUser(@PathVariable id: Int): ResponseEntity<MutableList<GetPost>> {
+        return ResponseEntity.ok(postRepository.getPostByFollowedUsers(id))
     }
 
-    // get all posts from followed users for user
-    @GetMapping("/home/{id}")
-    fun getAllPosts(@PathVariable id: Int): ResponseEntity<MutableList<Post>> {
-        val followedUsers = followerRepository.findFollowingByFollowerId(id)
-        if (followedUsers.isNotEmpty()) {
-            return ResponseEntity.ok(postRepository.findPostsByFollowedUsers(followedUsers))
-        } else {
-            return ResponseEntity.ok(mutableListOf())
-        }
+
+    @PostMapping("/adLike")
+    fun addLike(@RequestBody like: Like): ResponseEntity<Int> {
+        return ResponseEntity(likeRepository.save(like), HttpStatus.CREATED)
     }
 }
+
+data class CreatePost(
+    val content: String,
+    val user_id: Int
+)
+
+data class CreateComment(
+    val user_id: Int,
+    val post_id: Int,
+    val content: String
+)

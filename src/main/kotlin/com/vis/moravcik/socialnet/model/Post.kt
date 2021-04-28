@@ -2,11 +2,25 @@ package com.vis.moravcik.socialnet.model
 
 class Post (
         val id: Int,
-        var user_id: Int,
-        var content: String
+        var content: String,
+        var likes: Int,
+        var comments: List<Comment>
+)
+data class GetPost(
+        val userId: Int,
+        val firstName: String,
+        val lastName: String,
+        val postId: Int,
+        val content: String,
+        val comments: Int,
+        val likes: Int
 )
 
-data class CreatePostDTO(
-        val user_id: Int,
-        val content: String
+data class UserPost(
+        val content: String,
+        val comments: Int,
+        val likes: Int
 )
+
+
+

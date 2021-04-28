@@ -1,9 +1,9 @@
 package com.vis.moravcik.socialnet.service
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import com.vis.moravcik.socialnet.EmailServiceImpl
 import com.vis.moravcik.socialnet.controller.*
-import com.vis.moravcik.socialnet.model.CreateFollowerFollowing
-import com.vis.moravcik.socialnet.model.CreateUserDTO
+import com.vis.moravcik.socialnet.model.FollowerFollowing
 import com.vis.moravcik.socialnet.model.User
 import com.vis.moravcik.socialnet.repository.*
 import org.springframework.http.ResponseEntity
@@ -17,28 +17,25 @@ import kotlin.math.sin
 class UserService(
         val userRepository: UserRepository,
         val followerRepository: FollowerRepository,
-        val postRepository: PostRepository,
-        val messageRepository: MessageRepository,
-        val channelRepository: ChannelRepository,
-        val channelUserRepository: ChannelUserRepository
+        val emailServiceImpl: EmailServiceImpl
 ) {
 
-    fun registerUser(createUserDTO: CreateUserDTO): ResponseEntity<Response> {
-        // check if email is present in db
-        var user = userRepository.findByEmail(createUserDTO.email)
+    fun registerUser(userToCreate: User): ResponseEntity<Response> {
+//         check if email is present in db
+        var user = userRepository.findByEmail(userToCreate.email)
         if (user != null) {
             return ResponseEntity.ok(Response(false, "email already in use"))
         }
 
         // check if username is present in db
-        user = userRepository.findByUsername(createUserDTO.username)
+        user = userRepository.findByUsername(userToCreate.username)
         if (user != null) {
             return ResponseEntity.ok(Response(false, "username already in use"))
         }
-        val hashedPass = BCrypt.withDefaults().hashToString(12, createUserDTO.password.toCharArray())
+        val hashedPass = BCrypt.withDefaults().hashToString(12, userToCreate.password.toCharArray())
 
-        createUserDTO.password = hashedPass
-        userRepository.save(createUserDTO)
+        userToCreate.password = hashedPass
+        userRepository.save(userToCreate)
         return ResponseEntity.ok(Response(true, "Registration successful. You can now login."))
     }
 
@@ -57,13 +54,24 @@ class UserService(
         }
     }
 
+    fun sendMail(userId: Int) {
+        val followers = userRepository.getFollowers(userId)
+        val username = userRepository.findById(userId)?.username
+        for (follower in followers) {
+            val mail = userRepository.getMail(follower.id, username)
+                ?: "Text"
+            print(mail)
+            emailServiceImpl.sendSimpleMessage("erik.moravcik.st@vsb.cz", "Notification", mail)
+        }
+    }
+
     fun followUser(userRequest: FollowUserRequest): Response {
         //check if exists entry in followers_following - thus user is following another user
         val item = followerRepository.findByFollowerIdAndFollowingId(followingId = userRequest.following_id, followerId = userRequest.follower_id)
 
         // if not add entry in followers_following
         return if (item == null) {
-            followerRepository.save(CreateFollowerFollowing(followerId = userRequest.follower_id, followingId = userRequest.following_id))
+            followerRepository.save(FollowerFollowing(followerId = userRequest.follower_id, followingId = userRequest.following_id))
             Response(success = true, message = "User id: ${userRequest.follower_id} is now following user id: ${userRequest.following_id}")
         } else {
             Response(success = false, message = "User id: ${userRequest.follower_id} is already following user id: ${userRequest.following_id}")
@@ -80,64 +88,5 @@ class UserService(
         }
     }
 
-    // discover feature for managers - find players that have their location stored and are not yet followed by manager
-    fun discover(id: Int): DiscoverResponse {
-        // get followed users to exclude them in the search
-        val ids = followerRepository.findFollowingByFollowerId(id)
-        // add managers id
-        ids.add(id)
-
-        // get manager that is requesting discover
-        val manager = userRepository.findById(id)
-
-        // get users excluding followed ids
-        val discoveredUsers = userRepository.discover(ids)
-
-        return if (discoveredUsers.isNotEmpty()) {
-            // sort by their location
-            val sortedUsers = discoveredUsers.sortedWith(CustomComparator(manager?.longitude!!, manager.latitude!!))
-            DiscoverResponse(success = true, users = sortedUsers)
-        } else {
-            DiscoverResponse(success = false, users = null)
-        }
-    }
-
-    // complete delete of user
-    fun batchDelete(ids: List<Int>) {
-        val channels = channelUserRepository.getChannelsByUsers(ids)
-        if (channels.isNotEmpty()) {
-            messageRepository.deleteByChannels(channels)
-            channelUserRepository.deleteByChannelId(channels)
-            channelRepository.deleteByChannelId(channels)
-        }
-        followerRepository.deleteByUserIds(ids)
-        postRepository.deleteByUsers(ids)
-        userRepository.batchDelete(ids)
-    }
 }
-
-// comparator to sort users by location - longitude and latitude
-class CustomComparator(
-        private val long: Double,
-        private val lat: Double
-) : Comparator<User?> {
-    override fun compare(o1: User?, o2: User?): Int {
-        return distance(o1?.latitude!!, o1.longitude!!) - distance(o2?.latitude!!, o2.longitude!!)
-    }
-
-    private fun distance(lat2: Double, lon2: Double): Int {
-        return if ((lat == lat2) && (long == lon2)) {
-            0
-        } else {
-            val theta: Double = long - lon2
-            var dist = sin(Math.toRadians(lat)) * sin(Math.toRadians(lat2)) + cos(Math.toRadians(lat)) * cos(Math.toRadians(lat2)) * cos(Math.toRadians(theta))
-            dist = acos(dist)
-            dist = Math.toDegrees(dist)
-            dist *= 60 * 1.1515
-            dist *= 1.609344
-            dist.toInt()
-        }
-    }
-}
-
 

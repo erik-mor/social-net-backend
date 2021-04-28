@@ -13,29 +13,10 @@ import org.springframework.stereotype.Service
 
 @Service
 class MessagingService(
-        val channelRepository: ChannelRepository,
         val channelUserRepository: ChannelUserRepository,
         val messageRepository: MessageRepository,
         val userRepository: UserRepository
 ) {
-    fun contact(contactUserRequest: ContactUserRequest): Int {
-        // condition so user cannot contact himself
-        if (contactUserRequest.user_id == contactUserRequest.contacted_user_id)
-            return 0
-
-        // if channel already exists return it or create new for requesting users
-        return channelUserRepository.getChannelIdForUsers(contactUserRequest.user_id, contactUserRequest.contacted_user_id)
-            ?: createChannel(contactUserRequest)
-    }
-
-    fun createChannel(contactUserRequest: ContactUserRequest): Int {
-        // create new channel
-        val channelId = channelRepository.saveChannel()
-
-        // create entries in channel_users for requesting users
-        channelUserRepository.saveUsers(channelId, contactUserRequest.user_id, contactUserRequest.contacted_user_id)
-        return channelId
-    }
 
     fun getChannelsForUser(userId: Int): List<OpenChannelsResponse> {
         val channels = channelUserRepository.getChannelIdByUser(userId)
